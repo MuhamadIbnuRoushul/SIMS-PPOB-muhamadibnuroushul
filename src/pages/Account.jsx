@@ -140,6 +140,7 @@ const Account = () => {
             className="w-full border border-gray-300 rounded px-3 py-2"
           />
         </div>
+
         <div className="w-full mb-4">
           <label className="block text-sm font-medium mb-1">Last Name</label>
           <input
@@ -152,14 +153,14 @@ const Account = () => {
         </div>
         {!isEditing ? (
           <button
-            className="w-full bg-blue-500 text-white py-2 rounded mb-4"
+            className="w-full border border-red-500 text-red-500 py-2 rounded mb-5"
             onClick={() => setIsEditing(true)}
           >
             Edit Profile
           </button>
         ) : (
           <button
-            className="w-full bg-green-500 text-white py-2 rounded mb-4"
+            className="w-full bg-red-500 text-white py-2 rounded mb-5"
             onClick={handleSaveProfile}
             disabled={isSaving}
           >

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProfile, getBalance, topUp } from "../services/api"; // Pastikan ada fungsi topUp di API
-import Navbar from "../components/Navbar";
+import { getProfile, getBalance, topUp } from "../services/api";
+
 import Profile from "../components/Profile";
 import BalanceSection from "../components/BalanceSection";
 
@@ -49,31 +49,36 @@ const TopUp = () => {
   };
 
   const handleTopUp = async () => {
+    if (!nominal || nominal <= 0) {
+      alert("Masukkan nominal yang valid.");
+      return;
+    }
+
     try {
-      const response = await topUp(token, nominal); // Memanggil API dengan parameter nominal
+      const response = await topUp(token, parseInt(nominal, 10)); // Pastikan nominal adalah angka
       if (response.status === 0) {
-        alert('Top Up berhasil! Saldo Anda sekarang: Rp ' + response.data.balance);
+        alert("Top Up berhasil! Saldo Anda sekarang: Rp " + response.data.balance.toLocaleString("id-ID"));
         setBalance(response.data.balance); // Perbarui saldo
+        setNominal(""); // Reset input setelah top-up berhasil
       } else {
-        alert('Top Up gagal: ' + response.message);
+        alert("Top Up gagal: " + response.message);
       }
     } catch (error) {
       alert(
-        'Terjadi kesalahan saat melakukan top-up: ' +
+        "Terjadi kesalahan saat melakukan top-up: " +
           (error.response?.data?.message || error.message)
       );
     }
   };
-  
 
-  const formattedNominal = nominal
-    ? "Rp. " + parseInt(nominal, 10).toLocaleString("id-ID")
-    : "";
+  const handlePresetNominal = (amount) => {
+    setNominal(amount); // Set nominal dari tombol shortcut
+  };
+
+  const formattedNominal = nominal ? "Rp. " + parseInt(nominal, 10).toLocaleString("id-ID") : "";
 
   return (
     <div className="min-h-screen bg-white pt-20">
-      <Navbar />
-
       <div className="max-w-7xl mx-auto p-6 mt-6 flex flex-col md:flex-row gap-6">
         <Profile profile={profile} error={error} isLoading={isLoading} />
         <BalanceSection balance={balance} showBalance={showBalance} toggleBalance={toggleBalance} />
@@ -83,8 +88,8 @@ const TopUp = () => {
         <h3 className="text-xl font-semibold text-gray-600">
           Silahkan masukkan <br />
           <span className="text-3xl">Nominal Top Up</span>
+          
         </h3>
-
         <div className="flex flex-col md:flex-row gap-6">
           <div className="w-full md:w-1/2">
             <input
@@ -94,30 +99,17 @@ const TopUp = () => {
               value={formattedNominal}
               onChange={handleNominalChange}
             />
+            <button className={`w-full bg-gray-400 text-white py-2 px-4 rounded-md mt-4 ${!nominal }`} onClick={handleTopUp} disabled={!nominal}>Top Up</button>
           </div>
-
-          <div className="w-full md:w-1/2 flex flex-wrap gap-4 mt-4">
-            {["10000", "20000", "50000", "100000", "250000", "500000"].map((amount) => (
-              <button
-                key={amount}
-                className="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300"
-                onClick={() => setNominal(amount)}
-              >
-                Rp. {parseInt(amount, 10).toLocaleString("id-ID")}
-              </button>
+          
+          <div className="w-full md:w-1/2 flex flex-wrap gap-5 mt-4">{["10000", "20000", "50000", "100000", "250000", "500000"].map((amount) => (
+            <button key={amount} className="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300" onClick={() => handlePresetNominal(amount)}>
+              Rp. {parseInt(amount, 10).toLocaleString("id-ID")}
+            </button>
             ))}
           </div>
         </div>
-
-        <button
-          className={`w-full md:w-1/2 bg-gray-500 text-white py-2 px-4 rounded-md ${
-            !nominal ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-600"
-          }`}
-          onClick={handleTopUp}
-          disabled={!nominal}
-        >
-          Top Up
-        </button>
+        
       </div>
     </div>
   );

@@ -8,6 +8,8 @@ import Navbar from './components/Navbar';
 import TopUp from './pages/TopUp';  // Import halaman Top Up
 import Transaction from './pages/Transaction';  // Import halaman Transaction
 import Account from './pages/Account';  // Import halaman Akun
+import Pembayaran from "./pages/Pembayaran";
+
 
 const App = () => {
   const token = localStorage.getItem('token'); // Ambil token dari localStorage
@@ -50,6 +52,13 @@ const App = () => {
                 <TopUp />
               </ProtectedRoute>
             } 
+          />
+          <Route 
+            path="/pembayaran" 
+            element={<ProtectedRoute>
+                <Pembayaran />
+              </ProtectedRoute>
+              } 
           />
           <Route 
             path="/transaction" 

@@ -194,32 +194,77 @@ export const getBanners = async (token) => {
 
 
 // Fungsi untuk melakukan Top Up
-export const topUp = async (token, top_up_amount) => {
+export const topUp = async (token, amount) => {
   try {
-    // Validasi top_up_amount, memastikan hanya angka dan lebih besar dari 0
-    if (isNaN(top_up_amount) || top_up_amount <= 0) {
-      throw new Error('Nominal harus berupa angka yang lebih besar dari 0');
+    // Validasi jumlah top-up di sisi klien
+    if (isNaN(amount) || amount <= 0) {
+      throw new Error("Jumlah Top Up harus berupa angka dan lebih besar dari 0.");
     }
 
-    // Request ke API
-    const response = await axios.post(`${API_BASE_URL}/topup`,  // Endpoint top up
-      {
-        top_up_amount: top_up_amount,  // Mengirimkan top_up_amount ke server
-        transaction_type: 'TOPUP',  // Set transaction_type sesuai ketentuan
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,  // Menyertakan token JWT di header
-        },
-      }
-    );
+    // Header Authorization untuk JWT Token
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
 
-    return response.data;  // Mengembalikan data dari API jika berhasil
+    // Body untuk request
+    const body = {
+      top_up_amount: amount,
+    };
+
+    // Kirim POST request ke API
+    const response = await axios.post(`${API_BASE_URL}/topup`, body, { headers });
+
+    // Periksa status API
+    if (response.data.status !== 0) {
+      throw new Error(response.data.message || "Top Up gagal.");
+    }
+
+    return response.data; // Return hasil sukses
   } catch (error) {
-    console.error("Error during top up:", error);
-    throw new Error(error.response ? error.response.data.message : error.message);
+    console.error("Error in topUp:", error.response?.data || error.message);
+    throw error; // Lempar error agar bisa ditangani di komponen
   }
 };
 
 
+export const transaction = async (token, serviceCode, amount) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/transaction`,
+      {
+        service_code: serviceCode,
+        amount: amount,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data; // Kembalikan data dari API
+  } catch (error) {
+    if (error.response) {
+      throw new Error(error.response.data.message || "Transaction failed.");
+    }
+    throw new Error(error.message);
+  }
+};
+
+// Fungsi untuk mendapatkan riwayat transaksi
+export const getTransactionHistory = async (token, limit = 5, offset = 0) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/transaction/history`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: { limit, offset }, // Tambahkan parameter limit dan offset
+    });
+    return response.data?.data || {}; // Ambil data lengkap (offset, limit, records)
+  } catch (error) {
+    console.error("Error fetching transaction history:", error.response?.data || error.message);
+    throw error;
+  }
+};
 
